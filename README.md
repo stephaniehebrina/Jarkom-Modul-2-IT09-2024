@@ -130,6 +130,8 @@ Output :
 > load balancer
 ![13b](output/13b.png)
 
+[13](output/demo-13.mov)
+
 # no 14
 > Mereka juga belum merasa puas jadi pusat meminta agar web servernya dan load balancer nya diubah menjadi nginx
 
@@ -352,3 +354,19 @@ Menambahkan least-conn di line 2
 Kesimpulan : Least Connections memiliki kinerja yang lebih baik dalam menangani beban lalu lintas dibandingkan dengan Round Robin. Least Connections mampu menangani lebih banyak permintaan dalam waktu yang sama, memberikan respons yang lebih cepat, dan memiliki kecepatan transfer yang lebih tinggi, dan  lebih baik dalam menangani beban lalu lintas dengan waktu proses yang lebih rendah
 
 Selebihnya di : https://docs.google.com/document/d/1RNiwSTX7fa-01DJ5N1eOw96GoBZOdjdA2orrkkywhkk/edit
+
+# no 16 
+Karena dirasa kurang aman karena masih memakai IP markas ingin akses ke mylta memakai mylta.xxx.com dengan alias www.mylta.xxx.com (sesuai web server terbaik hasil analisis kalian)
+
+
+# no 17
+Agar aman, buatlah konfigurasi agar mylta.xxx.com hanya dapat diakses melalui port 14000 dan 14400. 
+
+# no 18
+Apa bila ada yang mencoba mengakses IP mylta akan secara otomatis dialihkan ke www.mylta.xxx.com
+
+# no 19
+Karena probset sudah kehabisan ide masuk ke salah satu worker buatkan akses direktori listing yang mengarah ke resource worker2
+
+# no 20
+Worker tersebut harus dapat di akses dengan tamat.xxx.com dengan alias www.tamat.xxx.com
