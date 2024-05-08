@@ -502,3 +502,5 @@ www     IN      CNAME   tamat.it09.com.
 
 service bind9 restart
 ```
+
+Demo : <video controls src="output/0508.mp4" title="huaa"></video>
