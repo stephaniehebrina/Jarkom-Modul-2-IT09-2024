@@ -358,12 +358,61 @@ Selebihnya di : https://docs.google.com/document/d/1RNiwSTX7fa-01DJ5N1eOw96GoBZO
 # no 16 
 Karena dirasa kurang aman karena masih memakai IP markas ingin akses ke mylta memakai mylta.xxx.com dengan alias www.mylta.xxx.com (sesuai web server terbaik hasil analisis kalian)
 
+Ke root Pochinki, tambahkan:
+```
+echo 'zone "mylta.it09.com" {
+    type master;
+    file "/etc/bind/jarkom/mylta.it09.com";
+};' >> /etc/bind/named.conf.local
+
+echo ';
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     mylta.it09.com. root.mylta.it09.com. (
+                                2         ; Serial
+                                604800    ; Refresh
+                                86400     ; Retry
+                                2419200   ; Expire
+                                604800 )  ; Negative Cache TTL
+;
+@       IN      NS      mylta.it09.com.
+@       IN      A       10.68.2.5       ; IP Mylta
+www     IN      CNAME   mylta.it09.com.' > /etc/bind/jarkom/mylta.it09.com
+
+service bind9 restart
+```
 
 # no 17
 Agar aman, buatlah konfigurasi agar mylta.xxx.com hanya dapat diakses melalui port 14000 dan 14400. 
 
+```
+echo 'upstream myita {
+    server 10.68.3.2; #stabler
+    server 10.68.3.2; #serverny
+    server 10.68.3.2; #lipvoka
+}
+
+server {
+listen 14000;
+listen 14400;
+server_name 10.68.2.5; 
+
+location / {
+proxy_pass http://myita;
+}
+}
+' > /etc/nginx/sites-enabled/default
+
+service nginx restart
+```
+
+Output : ada di video 
+
 # no 18
 Apa bila ada yang mencoba mengakses IP mylta akan secara otomatis dialihkan ke www.mylta.xxx.com
+
+
 
 # no 19
 Karena probset sudah kehabisan ide masuk ke salah satu worker buatkan akses direktori listing yang mengarah ke resource worker2
