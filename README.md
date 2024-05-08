@@ -5,6 +5,420 @@
 | Gavriel Pramuda Kurniaadi | 5027221031  |
 | Stephanie Hebrina Mabunbun Simatupang | 5027221069  | 
 
+## No 1
+> Untuk membantu pertempuran di Erangel, kamu ditugaskan untuk membuat jaringan komputer yang akan digunakan sebagai alat komunikasi. Sesuaikan rancangan Topologi dengan rancangan dan pembagian yang berada di link yang telah disediakan, dengan ketentuan nodenya sebagai berikut :
+
+>a. DNS Master akan diberi nama Pochinki, sesuai dengan kota tempat dibuatnya server tersebut
+
+>b. Karena ada kemungkinan musuh akan mencoba menyerang Server Utama, maka buatlah DNS Slave Georgopol yang mengarah ke Pochinki
+
+>c. Markas pusat juga meminta dibuatkan tiga Web Server yaitu Severny, Stalber, dan Lipovka. Sedangkan Mylta akan bertindak sebagai Load Balancer untuk server-server tersebut
+
+### Topologi 
+![topologi](output/topologi.png)
+
+### IP Address :
+- Pochinki (10.68.1.2) (DNS Master)
+- Georgopol (10.68.1.3) (DNS Slave)
+- Rozhok (10.68.2.2) (Client)
+- School (10.68.2.3) (Client)
+- FerryPier (10.68.2.4) (Client)
+- Mylta (10.68.2.5) (Load Balancer)
+- Severny (10.68.3.2) (Webserver)
+- Stalber (10.68.3.3) (Webserver)
+- Lipovka (10.68.3.4) (Webserver)
+
+## No 2
+> Karena para pasukan membutuhkan koordinasi untuk mengambil airdrop, maka buatlah sebuah domain yang mengarah ke Stalber dengan alamat airdrop.xxxx.com dengan alias www.airdrop.xxxx.com dimana xxxx merupakan kode kelompok. Contoh : airdrop.it01.com
+
+### Pengerjaan
+Membuat script.sh pada node pochinki dengan kode sebagai berikut:
+```
+echo 'nameserver 192.168.122.1' > /etc/resolv.conf
+
+apt-get update
+apt-get install bind9 -y
+
+echo 'zone "airdrop.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/airdrop.it09.com";
+};' > /etc/bind/named.conf.local
+
+mkdir /etc/bind/jarkom
+
+cp /etc/bind/db.local /etc/bind/jarkom/airdrop.it09.com
+
+echo '
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     airdrop.it09.com. root.airdrop.it09.com. (
+                        2      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      airdrop.it09.com.
+@       IN      A        10.68.3.3
+www     IN      CNAME   airdrop.it09.com.' > /etc/bind/jarkom/airdrop.it09.com
+
+service bind9 restart
+```
+### Output
+![nomor 2](output/2.png)
+
+## Soal 3
+>Para pasukan juga perlu mengetahui mana titik yang sedang di bombardir artileri, sehingga dibutuhkan domain lain yaitu redzone.xxxx.com dengan alias www.redzone.xxxx.com yang mengarah ke Severny
+
+### Pengerjaan
+Menambahkan kode script.sh pada node Pochinki
+```echo 'zone "redzone.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/redzone.it09.com";
+};' > /etc/bind/named.conf.local
+
+cp /etc/bind/db.local /etc/bind/jarkom/redzone.it09.com
+
+echo ' 
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     redzone.it09.com. root.redzone.it09.com. (
+                        2      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      redzone.it09.com.
+@       IN      A       10.68.3.2
+www     IN      CNAME   redzone.it09.com.' > /etc/bind/jarkom/redzone.it09.com
+
+service bind9 restart
+```
+### Output
+![nomor 3](output/3.png)
+
+## Soal 4
+> Markas pusat meminta dibuatnya domain khusus untuk menaruh informasi persenjataan dan suplai yang tersebar. Informasi persenjataan dan suplai tersebut mengarah ke Mylta dan domain yang ingin digunakan adalah loot.xxxx.com dengan alias www.loot.xxxx.com
+
+### Pengerjaan
+Menambahkan kode script.sh pada node Pochinki
+```echo 'zone "loot.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/loot.it09.com";
+};' >> /etc/bind/named.conf.local
+
+cp /etc/bind/db.local /etc/bind/jarkom/loot.it09.com
+
+echo ' 
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     loot.it09.com. root.loot.it09.com. (
+                        2      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      loot.it09.com.
+@       IN      A       10.68.2.5
+www     IN      CNAME   loot.it09.com.' > /etc/bind/jarkom/loot.it09.com
+
+service bind9 restart
+```
+### Output
+![nomor 4](output/4.png)
+
+## Soal 5
+> Pastikan domain-domain tersebut dapat diakses oleh seluruh komputer (client) yang berada di Erangel
+
+### Pengerjaan
+Menambahkan IP 192.168.122.1 ke /etc/resolv.conf masing-masing client.
+
+### Output
+- Rozhok <br>
+![nomor 5 Rozhok](output/5_rozhok.png)
+- School <br>
+![nomor 5 Rozhok](output/5_school.png)
+- Ferrypier <br>
+![nomor 5 Ferrypier](output/5_ferrypier.png)
+
+## Soal 6
+> Beberapa daerah memiliki keterbatasan yang menyebabkan hanya dapat mengakses domain secara langsung melalui alamat IP domain tersebut. Karena daerah tersebut tidak diketahui secara spesifik, pastikan semua komputer (client) dapat mengakses domain redzone.xxxx.com melalui alamat IP Severny (Notes : menggunakan pointer record)
+
+### Pengerjaan
+```echo ' zone "2.3.68.10.in-addr.arpa" {
+        type master;
+        file "/etc/bind/jarkom/2.3.68.10.in-addr.arpa";
+};' >> /etc/bind/named.conf.local
+
+cp /etc/bind/db.local /etc/bind/jarkom/2.3.68.10.in-addr.arpa
+
+echo '
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     redzone.it09.com. root.redzone.it09.com. (
+                        2      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+2.3.68.10.in-addr.arpa. IN      NS      redzone.it09.com.
+1                     IN      PTR     redzone.it09.com.' > /etc/bind/jarkom/2.3.68.10.in-addr.arpa
+
+service bind9 restart
+```
+### Output
+![nomor 6](output/6.png)
+
+## Soal 7
+> Akhir-akhir ini seringkali terjadi serangan siber ke DNS Server Utama, sebagai tindakan antisipasi kamu diperintahkan untuk membuat DNS Slave di Georgopol untuk semua domain yang sudah dibuat sebelumnya
+
+### Pengerjaan
+1. Menambahkan allow-transfer dan also-notify pada masing-masing zone di program script.sh pada node Pochinki
+```echo 'zone "airdrop.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/airdrop.it09.com";
+        allow-transfer { 10.68.1.3; }; // IP Georgopol
+        also-notify { 10.68.1.3; }; // IP Georgopol
+};' > /etc/bind/named.conf.local
+
+
+echo 'zone "redzone.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/redzone.it09.com";
+        also-notify { 10.68.1.3; }; // IP Georgopol
+        allow-transfer { 10.68.1.3; }; // IP Georgopol
+   
+};' >> /etc/bind/named.conf.local
+
+echo 'zone "loot.it09.com" {
+        type master;
+        file "/etc/bind/jarkom/loot.it09.com";
+        also-notify { 10.68.1.3; }; // IP Georgopol
+        allow-transfer { 10.68.1.3; }; // IP Georgopol
+   
+};' >>/etc/bind/named.conf.local
+
+service bind9 restart
+```
+
+2. Buat script.sh pada node Georgopol dengan kode di bawah ini
+```
+echo 'zone "airdrop.it09.com" {
+    type slave;
+    masters { 10.68.1.2; }; // IP Pochinki
+    file "/var/lib/bind/airdrop.it09.com";
+};
+
+zone "redzone.it09.com" {
+    type slave;
+    masters { 10.68.1.2; }; // IP Pochinki
+    file "/var/lib/bind/redzone.it09.com";
+};
+
+zone "loot.it09.com" {
+    type slave;
+    masters { 10.68.1.2; }; // IP Pochinki
+    file "/var/lib/bind/loot.it09.com";
+};'  > /etc/bind/named.conf.local
+```
+
+
+Untuk mengetesnya, bind9 pada pochinki perlu diberhentikan dengan ```service bind9 stop```
+
+### Output
+- Start Georgopol <br>
+![nomor 7 Georgopol](output/7_startgeorgopol.png)
+- Stop Pochinki <br>
+![nomor 7 Pochinki](output/7_stoppochinki.png)
+- Test di Client <br>
+![nomor 7 Client](output/7_client.png)
+
+## Soal 8
+> Kamu juga diperintahkan untuk membuat subdomain khusus melacak airdrop berisi peralatan medis dengan subdomain medkit.airdrop.xxxx.com yang mengarah ke Lipovka
+
+### Pengerjaan
+Menambahkan program ke script.sh pada node Pochinki
+```
+echo '
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     airdrop.it09.com. root.airdrop.it09.com. (
+                        2      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      airdrop.it09.com.
+@       IN      A        10.68.3.3   ; 
+www     IN      CNAME   airdrop.it09.com.
+medkit  IN      A       10.68.3.4     ;' > /etc/bind/jarkom/airdrop.it09.com
+
+service bind9 restart
+```
+
+### Output
+![nomor 8](output/8.png)
+
+## Soal 9
+> Terkadang red zone yang pada umumnya di bombardir artileri akan dijatuhi bom oleh pesawat tempur. Untuk melindungi warga, kita diperlukan untuk membuat sistem peringatan air raid dan memasukkannya ke subdomain siren.redzone.xxxx.com dalam folder siren dan pastikan dapat diakses secara mudah dengan menambahkan alias www.siren.redzone.xxxx.com dan mendelegasikan subdomain tersebut ke Georgopol dengan alamat IP menuju radar di Severny
+
+### Pengerjaan
+1. Menambahkan program ke script.sh pada node Pochinki
+```
+echo ';
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     redzone.it09.com. root.redzone.it09.com. (
+                        2               ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      redzone.it09.com.
+@       IN      A       10.68.3.2
+www     IN      CNAME   redzone.it09.com.
+ns1     IN      A       10.68.1.3     ; IP Georgopol
+siren   IN      NS      ns1' > /etc/bind/jarkom/redzone.it09.com
+
+
+echo "options {
+    directory \"/var/cache/bind\";
+
+    // If there is a firewall between you and nameservers you want
+    // to talk to, you may need to fix the firewall to allow multiple
+    // ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+
+    // If your ISP provided one or more IP addresses for stable
+    // nameservers, you probably want to use them as forwarders.
+    // Uncomment the following block, and insert the addresses replacing
+    // the all-0's placeholder.  
+    // };
+
+    //========================================================================
+    // If BIND logs error messages about the root key being expired,
+    // you will need to update your keys.  See https://www.isc.org/bind-keys
+    //========================================================================
+    //dnssec-validation auto;
+
+    allow-query { any; };
+    auth-nxdomain no;
+    listen-on-v6 { any; };
+};" > /etc/bind/named.conf.options
+
+service bind9 restart
+```
+2. Menambahkan program ke script.sh pada node Georgopol
+```
+echo "
+options {
+        directory \"/var/cache/bind\";
+        allow-query{any;};
+        auth-nxdomain no;
+        listen-on-v6 { any; };
+};
+" > /etc/bind/named.conf.options
+
+echo '
+
+zone "siren.redzone.it09.com"{
+        type master;
+        file "/etc/bind/siren/siren.redzone.it09.com";
+};
+'>> /etc/bind/named.conf.local
+
+mkdir /etc/bind/siren
+
+echo "
+\$TTL    604800
+@       IN      SOA     siren.redzone.it09.com. root.siren.redzone.it09.com. (
+                        2      ; Serial
+                        604800         ; Refresh
+                        86400         ; Retry
+                        2419200         ; Expire
+                        604800 )       ; Negative Cache TTL
+;
+@               IN      NS      siren.redzone.it09.com.
+@               IN      A       10.68.3.2       ;IP Severny
+www             IN      CNAME   siren.redzone.it09.com.
+" > /etc/bind/siren/siren.redzone.it09.com
+service bind9 restart
+```
+
+### Output
+![nomor 9](output/9.png)
+
+## Soal 10
+> Markas juga meminta catatan kapan saja pesawat tempur tersebut menjatuhkan bom, maka buatlah subdomain baru di subdomain siren yaitu log.siren.redzone.xxxx.com serta aliasnya www.log.siren.redzone.xxxx.com yang juga mengarah ke Severny
+
+### Pengerjaan
+1. Menambahkan program ke script.sh pada node Georgopol
+```
+echo "
+\$TTL    604800
+@       IN      SOA     siren.redzone.it09.com. root.siren.redzone.it09.com. (
+                        2      ; Serial
+                        604800         ; Refresh
+                        86400         ; Retry
+                        2419200         ; Expire
+                        604800 )       ; Negative Cache TTL
+;
+@               IN      NS      siren.redzone.it09.com.
+@               IN      A       10.68.3.2       
+www             IN      CNAME   siren.redzone.it09.com.
+log             IN      A       10.68.3.2       
+www.log         IN      CNAME   log.siren.redzone.it09.com." > /etc/bind/siren/siren.redzone.it09.com
+service bind9 restart
+```
+### Output
+![nomor 10](output/10.png)
+
+## Soal 11
+>Setelah pertempuran mereda, warga Erangel dapat kembali mengakses jaringan luar, tetapi hanya warga Pochinki saja yang dapat mengakses jaringan luar secara langsung. Buatlah konfigurasi agar warga Erangel yang berada diluar Pochinki dapat mengakses jaringan luar melalui DNS Server Pochinki
+
+### Pengerjaan
+1. Menambahkan program ke script.sh pada node Pochinki
+```
+
+echo '
+options {
+        directory "/var/cache/bind";
+        forwarders {
+                192.168.122.1;
+        };
+        allow-query { any; };
+        auth-nxdomain no; #conform to RFC1035
+        listen-on-v6 { any; };
+};' > /etc/bind/named.conf.options
+
+
+```
+
+2. Mengganti IP pada nameserver dengan IP Pochinki
+
+```
+echo '
+nameserver 10.68.1.2
+' > /etc/resolv.conf
+```
+
+### Output
+![nomor 11](output/11.png)
 
 # no 12
 > Karena pusat ingin sebuah website yang ingin digunakan untuk memantau kondisi markas lainnya maka deploy lah webiste ini (cek resource yg lb) pada severny menggunakan apache
