@@ -412,10 +412,93 @@ Output : ada di video
 # no 18
 Apa bila ada yang mencoba mengakses IP mylta akan secara otomatis dialihkan ke www.mylta.xxx.com
 
+```
+echo '
+server {
+    listen 10.68.2.5:14000; 
+    listen 10.68.2.5:14400; 
+    server_name 10.68.2.5;
+
+    return 301 $scheme://www.mylta.it09.com$request_uri; # Redirect to www.mylta.it09.com
+}
+' > /etc/nginx/sites-available/redirect_ip
+
+ln -s /etc/nginx/sites-available/redirect_ip /etc/nginx/sites-enabled/redirect_ip
+
+nginx -t
+
+service nginx restart
+```
+![18](output/18.png)
 
 
 # no 19
 Karena probset sudah kehabisan ide masuk ke salah satu worker buatkan akses direktori listing yang mengarah ke resource worker2
+```
+cp -r dr-listing/worker2 /var/www/jarkom/
+```
+
+```
+echo -e "server {
+        listen 14000;
+
+        root /var/www/jarkom;
+        index index.php index.html index.htm index.nginx-debian.html;
+        server_name _;
+
+        location / {
+                try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location /worker2 {
+                autoindex on;
+                autoindex_exact_size off;
+        }
+
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+        }
+
+        location ~ /\.ht {
+                deny all;
+        }
+}" > /etc/nginx/sites-available/jarkom
+
+service nginx restart
+```
 
 # no 20
 Worker tersebut harus dapat di akses dengan tamat.xxx.com dengan alias www.tamat.xxx.com
+
+Masuk ke root pochinki, kemudian tambah :
+```
+zone "tamat.it09.com" {
+        type master;
+        file "/etc/bind/tamat/tamat.it09.com";
+};
+' > /etc/bind/named.conf.local
+mkdir /etc/bind/tamat
+
+cp /etc/bind/db.local /etc/bind/tamat/tamat.it09.com
+
+echo '
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     tamat.it09.com. tamat.mylta.it09.com. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      tamat.it9.com.
+@       IN      A       10.68.2.5  # IP
+@       IN      AAAA    ::1
+www     IN      CNAME   tamat.it09.com.
+' > /etc/bind/tamat/tamat.it09.com
+
+service bind9 restart
+```
